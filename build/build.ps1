@@ -9,7 +9,7 @@
 #  * /nodeReuse:false so no MSBuild worker processes are left behind.
 $ErrorActionPreference = 'Stop'
 
-$repo = 'C:\Users\a9949\.hermes\workspace\repos\foo_output_switcher'
+$repo = Split-Path -Parent $PSScriptRoot  # <checkout>\build -> <checkout>
 $vs = 'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools'
 $msbuild = Join-Path $vs 'MSBuild\Current\Bin\MSBuild.exe'
 
@@ -22,7 +22,10 @@ $sdk = '10.0.26100.0'
 # foo_openlyrics build directory for those ProjectReferences to compile. This
 # project itself never uses $(SolutionDir) - its paths hang off
 # $(MSBuildThisFileDirectory).
-$solutionDir = 'C:\Users\a9949\.hermes\workspace\repos\foo_openlyrics\build\'
+$solutionDir = (Join-Path (Split-Path -Parent $repo) 'foo_openlyrics\build') + '\'
+if (-not (Test-Path $solutionDir)) {
+    throw "The foobar2000 SDK projects (needed for WTL) were not found. Expected a foo_openlyrics checkout next to this one: $solutionDir"
+}
 
 Write-Host "==> foo_output_switcher ($platform $config)"
 & $msbuild '/m' '/nodeReuse:false' '/nologo' '/v:minimal' `
